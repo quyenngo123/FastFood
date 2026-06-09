@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/widgets/rainbow_text.dart';
+import 'package:fash_food/shared/widgets/rainbow_text.dart';
 
 class AuthHeader extends StatelessWidget {
   final String subtitle;
