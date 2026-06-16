@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/cart_entity.dart';
 import 'cart_item_model.dart';
+import 'voucher_model.dart';
 
 class CartModel extends CartEntity {
   const CartModel({
     required super.userId,
     required super.items,
+    super.appliedVoucher,
     required super.updatedAt,
   });
 
@@ -16,6 +18,9 @@ class CartModel extends CartEntity {
               ?.map((item) => CartItemModel.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [],
+      appliedVoucher: json['appliedVoucher'] != null 
+          ? VoucherModel.fromJson(json['appliedVoucher'] as Map<String, dynamic>)
+          : null,
       updatedAt: json['updatedAt'] is Timestamp
           ? (json['updatedAt'] as Timestamp).toDate()
           : DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now(),
@@ -34,6 +39,9 @@ class CartModel extends CartEntity {
     return {
       'userId': userId,
       'items': items.map((item) => CartItemModel.fromEntity(item).toJson()).toList(),
+      'appliedVoucher': appliedVoucher != null 
+          ? VoucherModel.fromEntity(appliedVoucher!).toJson() 
+          : null,
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
   }
@@ -42,8 +50,8 @@ class CartModel extends CartEntity {
     return CartModel(
       userId: entity.userId,
       items: entity.items,
+      appliedVoucher: entity.appliedVoucher,
       updatedAt: entity.updatedAt,
     );
   }
-
 }

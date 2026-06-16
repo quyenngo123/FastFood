@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/cart_entity.dart';
 import '../../domain/entities/cart_item_entity.dart';
+import '../../domain/entities/voucher_entity.dart';
 
 abstract class CartEvent extends Equatable {
   const CartEvent();
@@ -41,6 +42,16 @@ class ClearCartEvent extends CartEvent {
   @override
   List<Object?> get props => [userId];
 }
+
+class ApplyVoucherEvent extends CartEvent {
+  final VoucherEntity voucher;
+  const ApplyVoucherEvent(this.voucher);
+
+  @override
+  List<Object?> get props => [voucher];
+}
+
+class RemoveVoucherEvent extends CartEvent {}
 
 class UpdateCartStateEvent extends CartEvent {
   final CartEntity? cart;

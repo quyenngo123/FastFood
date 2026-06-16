@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:fash_food/core/theme/app_colors.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_state.dart';
+import 'package:fash_food/config/routes/app_routes.dart';
 
 class HomeHeader extends StatelessWidget {
   final String userName;
   final bool showSearchBar;
   final bool isSticky;
+  final VoidCallback? onSearchTap; // Thêm callback
 
   const HomeHeader({
     super.key,
     required this.userName,
     this.showSearchBar = true,
     this.isSticky = false,
+    this.onSearchTap,
   });
 
   @override
@@ -39,7 +43,7 @@ class HomeHeader extends StatelessWidget {
           const HomeHeaderUserInfo(),
           if (showSearchBar) ...[
             const SizedBox(height: 18),
-            const HomeSearchBar(),
+            HomeSearchBar(onTap: onSearchTap),
           ],
         ],
       ),
@@ -55,14 +59,14 @@ class HomeHeaderUserInfo extends StatelessWidget {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         String name = 'Khách';
+        String? photoUrl;
 
         if (state is AuthSuccess) {
           final user = state.user;
-          // Nếu có name (in hoa, có dấu) từ Firestore thì dùng ngay
+          photoUrl = user.photoUrl;
           if (user.name != null && user.name!.isNotEmpty) {
             name = user.name!;
           } else {
-            // Nếu không có, format email cho đẹp hơn (viết hoa chữ đầu)
             String emailPrefix = user.email.split('@').first;
             name = emailPrefix[0].toUpperCase() + emailPrefix.substring(1);
           }
@@ -71,30 +75,36 @@ class HomeHeaderUserInfo extends StatelessWidget {
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const CircleAvatar(
-                  radius: 22,
-                  backgroundColor: Colors.white24,
-                  backgroundImage: NetworkImage('https://ui-avatars.com/api/?name=User&background=random'),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Xin chào 👋',
-                        style: TextStyle(color: Colors.white70, fontSize: 13)),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: () => context.push(AppRoutes.profile),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.white24,
+                    backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                        ? NetworkImage(photoUrl)
+                        : NetworkImage('https://ui-avatars.com/api/?name=$name&background=random'),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Xin chào 👋',
+                          style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
             const HomeNotificationIcon(),
           ],
@@ -130,32 +140,37 @@ class HomeNotificationIcon extends StatelessWidget {
 }
 
 class HomeSearchBar extends StatelessWidget {
-  const HomeSearchBar({super.key});
+  final VoidCallback? onTap; // Thêm callback
+
+  const HomeSearchBar({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.search_rounded, color: Colors.white70, size: 22),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Tìm burger, pizza, trà sữa...',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
-            ),
+    return GestureDetector(
+      onTap: onTap, // Kích hoạt sự kiện khi nhấn vào
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.2),
+            width: 1,
           ),
-        ],
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.search_rounded, color: Colors.white70, size: 22),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Tìm burger, pizza, trà sữa...',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

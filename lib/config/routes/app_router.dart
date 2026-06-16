@@ -3,12 +3,15 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/profile_page.dart';
+import '../../features/auth/presentation/pages/address_page.dart';
 import '../../features/auth/presentation/widgets/splash_page.dart';
 import '../../features/food/domain/entities/food_entity.dart';
 import '../../features/food/domain/entities/cart_entity.dart';
 import '../../features/food/presentation/pages/food_page.dart';
 import '../../features/food/presentation/pages/food_detail_page.dart';
 import '../../features/food/presentation/pages/cart_page.dart';
+import '../../features/food/presentation/pages/voucher_page.dart';
+import '../../features/food/presentation/pages/favorite_page.dart';
 import '../../features/orders/domain/entities/order_entity.dart';
 import '../../features/orders/presentation/pages/checkout_page.dart';
 import '../../features/orders/presentation/pages/order_success_page.dart';
@@ -50,8 +53,8 @@ class AppRouter {
         builder: (context, state) => const FoodPage(),
       ),
       GoRoute(
-        path: '/food_detail',
-        name: 'food_detail',
+        path: AppRoutes.foodDetail,
+        name: 'foodDetail',
         builder: (context, state) {
           final food = state.extra as FoodEntity;
           return FoodDetailPage(food: food);
@@ -61,6 +64,16 @@ class AppRouter {
         path: AppRoutes.cart,
         name: 'cart',
         builder: (context, state) => const CartPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.vouchers,
+        name: 'vouchers',
+        builder: (context, state) => const VoucherPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.favorites,
+        name: 'favorites',
+        builder: (context, state) => const FavoritePage(),
       ),
       GoRoute(
         path: AppRoutes.checkout,
@@ -93,6 +106,12 @@ class AppRouter {
         name: 'profile',
         builder: (context, state) => const ProfilePage(),
       ),
+      GoRoute(
+        path: AppRoutes.address,
+        name: 'address',
+        builder: (context, state) => const AddressPage(),
+      ),
+     
     ],
     errorBuilder: (context, state) => const Scaffold(
       body: Center(child: Text('Trang không tìm thấy')),

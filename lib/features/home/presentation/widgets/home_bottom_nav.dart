@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class HomeBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -15,22 +16,63 @@ class HomeBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        boxShadow: [BoxShadow(color: Color(0x0D000000), blurRadius: 20)],
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          )
+        ],
       ),
       child: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
-        selectedItemColor: const Color(0xFF1976D2),
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: const Color(0xFFB0BEC5),
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
         onTap: onTap,
         items: [
           const BottomNavigationBarItem(
-              icon: Icon(Icons.home_filled), label: 'Trang chủ'),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home_filled),
+            label: 'Trang chủ',
+          ),
           const BottomNavigationBarItem(
-              icon: Icon(Icons.explore_rounded), label: 'Khám phá'),
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore_rounded),
+            label: 'Khám phá',
+          ),
           BottomNavigationBarItem(
             icon: Stack(
+              children: [
+                const Icon(Icons.shopping_cart_outlined),
+                if (cartCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: AppColors.price,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                      child: Text(
+                        '$cartCount',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            activeIcon: Stack(
               children: [
                 const Icon(Icons.shopping_cart_rounded),
                 if (cartCount > 0)
@@ -40,11 +82,10 @@ class HomeBottomNav extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFF5722),
+                        color: AppColors.price,
                         shape: BoxShape.circle,
                       ),
-                      constraints:
-                      const BoxConstraints(minWidth: 14, minHeight: 14),
+                      constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
                       child: Text(
                         '$cartCount',
                         style: const TextStyle(
@@ -60,9 +101,15 @@ class HomeBottomNav extends StatelessWidget {
             label: 'Giỏ hàng',
           ),
           const BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_rounded), label: 'Yêu thích'),
+            icon: Icon(Icons.favorite_outline_rounded),
+            activeIcon: Icon(Icons.favorite_rounded),
+            label: 'Yêu thích',
+          ),
           const BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded), label: 'Hồ sơ'),
+            icon: Icon(Icons.person_outline_rounded),
+            activeIcon: Icon(Icons.person_rounded),
+            label: 'Hồ sơ',
+          ),
         ],
       ),
     );

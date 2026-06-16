@@ -91,6 +91,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> updateUserProfile(UserEntity user) async {
+    final userModel = UserModel(
+      uid: user.uid,
+      email: user.email,
+      name: user.name,
+      photoUrl: user.photoUrl,
+      phone: user.phone,
+      address: user.address,
+    );
+    await _userRemoteDataSource.updateUserProfile(userModel);
+  }
+
+  @override
   Future<UserEntity> loginWithGoogle() => throw UnimplementedError();
   @override
   Future<UserEntity> loginWithFacebook() => throw UnimplementedError();

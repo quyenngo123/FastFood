@@ -27,4 +27,7 @@ abstract class AuthRepository {
 
   /// Lấy user hiện tại (nếu đã đăng nhập)
   Future<UserEntity?> getCurrentUser();
+
+  /// Cập nhật thông tin người dùng
+  Future<void> updateUserProfile(UserEntity user);
 }

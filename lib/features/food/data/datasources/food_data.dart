@@ -1,17 +1,180 @@
 import '../../domain/entities/food_entity.dart';
 
 class FoodData {
-  static const List<String> categories = [
-    'Tất cả', 'Burger', 'Pizza', 'Gà Rán', 'Tráng Miệng',
-    'Bánh Mì', 'Kimbap', 'Mì Ý', 'Đồ uống', 'Lẩu', 'Ăn Vặt'
-  ];
-
-  // ĐÃ XÓA TRẮNG DỮ LIỆU CỨNG
-  // Mục đích: Nếu App hiển thị món ăn -> Chắc chắn lấy từ Firebase.
-  // Nếu App hiện "Chưa có món nào" -> Bloc chưa lấy được dữ liệu từ Firebase.
-  static const List<FoodEntity> foods = [];
-
-  static List<FoodEntity> getByCategory(String category) {
-    return [];
+  static List<String> get categories {
+    final Set<String> categorySet = {'Tất cả'};
+    for (var food in foods) {
+      categorySet.add(food.category);
+    }
+    return categorySet.toList();
   }
+
+  static final List<FoodEntity> foods = [
+    // LẨU (ID: 57-61)
+    FoodEntity(
+      id: '57',
+      name: 'Lẩu Thái Hải Sản (2-3 người)',
+      description: 'Nước dùng chua cay đậm đà, ăn kèm tôm, mực, cá viên và các loại rau nấm.',
+      price: 350000,
+      originalPrice: 420000,
+      rating: 4.8,
+      reviewCount: 345,
+      imageUrl: 'https://images.unsplash.com/photo-1555126634-323283e090fa?q=80&w=1000&auto=format&fit=crop',
+      category: 'Lẩu',
+      isPopular: true,
+      isPromo: true,
+    ),
+    FoodEntity(
+      id: '58',
+      name: 'Lẩu Bò Nhúng Dấm',
+      description: 'Thịt bò bắp hoa tươi ngon nhúng vào nước dùng dấm thanh mát, cuốn bánh tráng.',
+      price: 320000,
+      rating: 4.7,
+      reviewCount: 187,
+      imageUrl: 'https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?q=80&w=1000&auto=format&fit=crop',
+      category: 'Lẩu',
+    ),
+    FoodEntity(
+      id: '59',
+      name: 'Lẩu Gà Lá É Phú Yên',
+      description: 'Đặc sản Phú Yên với thịt gà ta thả vườn và hương vị đặc trưng của lá é.',
+      price: 280000,
+      rating: 4.9,
+      reviewCount: 215,
+      imageUrl: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1000&auto=format&fit=crop',
+      category: 'Lẩu',
+      isPopular: true,
+    ),
+    FoodEntity(
+      id: '60',
+      name: 'Lẩu Nấm Chay Thanh Tịnh',
+      description: 'Nước dùng rau củ ngọt thanh và đa dạng các loại nấm quý.',
+      price: 250000,
+      rating: 4.6,
+      reviewCount: 124,
+      imageUrl: 'https://images.unsplash.com/photo-1547928576-a4a33237ce35?q=80&w=1000&auto=format&fit=crop',
+      category: 'Lẩu',
+    ),
+    FoodEntity(
+      id: '61',
+      name: 'Lẩu Riêu Cua Sườn Sụn',
+      description: 'Vị ngọt của cua đồng, vị chua của giấm bỗng và sườn sụn giòn sần sật.',
+      price: 380000,
+      originalPrice: 450000,
+      rating: 4.8,
+      reviewCount: 412,
+      imageUrl: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?q=80&w=1000&auto=format&fit=crop',
+      category: 'Lẩu',
+      isPromo: true,
+    ),
+
+    // ĂN VẶT (ID: 62-66)
+    FoodEntity(
+      id: '62',
+      name: 'Khoai Tây Chiên Lắc Phô Mai',
+      description: 'Khoai tây chiên giòn tan, lắc cùng bột phô mai mặn ngọt béo ngậy.',
+      price: 35000,
+      rating: 4.5,
+      reviewCount: 156,
+      imageUrl: 'https://images.unsplash.com/photo-1573016608964-f4b0ab1ae448?q=80&w=1000&auto=format&fit=crop',
+      category: 'Ăn vặt',
+    ),
+    FoodEntity(
+      id: '63',
+      name: 'Phô Mai Que Giòn Rụm',
+      description: 'Lớp vỏ giòn rụm bao bọc nhân phô mai kéo sợi cực hấp dẫn.',
+      price: 45000,
+      rating: 4.7,
+      reviewCount: 89,
+      imageUrl: 'https://images.unsplash.com/photo-1548340748-6d2b7d7da280?q=80&w=1000&auto=format&fit=crop',
+      category: 'Ăn vặt',
+      isPopular: true,
+    ),
+    FoodEntity(
+      id: '64',
+      name: 'Nem Chua Rán Hà Nội',
+      description: 'Món ăn vặt kinh điển, nem dai ngon, chiên nóng hổi ăn cùng tương ớt.',
+      price: 50000,
+      rating: 4.8,
+      reviewCount: 234,
+      imageUrl: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?q=80&w=1000&auto=format&fit=crop',
+      category: 'Ăn vặt',
+    ),
+    FoodEntity(
+      id: '65',
+      name: 'Bánh Tráng Trộn Đặc Biệt',
+      description: 'Bánh tráng, bò khô, trứng cút, xoài xanh trộn cùng sốt bò đặc trưng.',
+      price: 30000,
+      rating: 4.9,
+      reviewCount: 567,
+      imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c170db76?q=80&w=1000&auto=format&fit=crop',
+      category: 'Ăn vặt',
+      isPopular: true,
+    ),
+    FoodEntity(
+      id: '66',
+      name: 'Chân Gà Sả Tắc Cay Cay',
+      description: 'Chân gà giòn sần sật thấm vị chua cay mặn ngọt, thơm mùi sả tắc.',
+      price: 65000,
+      rating: 4.7,
+      reviewCount: 142,
+      imageUrl: 'https://images.unsplash.com/photo-1562967914-6c82c640d35c?q=80&w=1000&auto=format&fit=crop',
+      category: 'Ăn vặt',
+    ),
+
+    // TRÁNG MIỆNG (ID: 67-71)
+    FoodEntity(
+      id: '67',
+      name: 'Chè Thái Sầu Riêng',
+      description: 'Món chè thơm nồng mùi sầu riêng, mít tươi, thạch và nước cốt dừa béo ngậy.',
+      price: 35000,
+      rating: 4.9,
+      reviewCount: 824,
+      imageUrl: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?q=80&w=1000&auto=format&fit=crop',
+      category: 'Tráng miệng',
+      isPopular: true,
+    ),
+    FoodEntity(
+      id: '68',
+      name: 'Bánh Flan Caramen',
+      description: 'Vị béo của trứng sữa hòa quyện cùng đắng nhẹ của caramen, ăn kèm đá bào.',
+      price: 20000,
+      rating: 4.7,
+      reviewCount: 452,
+      imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=1000&auto=format&fit=crop',
+      category: 'Tráng miệng',
+    ),
+    FoodEntity(
+      id: '69',
+      name: 'Kem Bơ Đà Lạt',
+      description: 'Bơ sáp xay mịn mượt mà kết hợp cùng kem dừa dẻo và dừa khô giòn rụm.',
+      price: 45000,
+      rating: 4.8,
+      reviewCount: 612,
+      imageUrl: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?q=80&w=1000&auto=format&fit=crop',
+      category: 'Tráng miệng',
+      isPopular: true,
+    ),
+    FoodEntity(
+      id: '70',
+      name: 'Sữa Chua Trân Châu Hạ Long',
+      description: 'Sữa chua dẻo mịn ăn kèm trân châu trắng nóng hổi trong nước cốt dừa.',
+      price: 30000,
+      rating: 4.8,
+      reviewCount: 954,
+      imageUrl: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?q=80&w=1000&auto=format&fit=crop',
+      category: 'Tráng miệng',
+      isPopular: true,
+    ),
+    FoodEntity(
+      id: '71',
+      name: 'Hoa Quả Dầm Tô Tịch',
+      description: 'Sự kết hợp của nhiều loại trái cây tươi theo mùa, sữa đặc và nước cốt dừa.',
+      price: 35000,
+      rating: 4.6,
+      reviewCount: 318,
+      imageUrl: 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?q=80&w=1000&auto=format&fit=crop',
+      category: 'Tráng miệng',
+    ),
+  ];
 }

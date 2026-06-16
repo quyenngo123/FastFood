@@ -7,7 +7,10 @@ class OrderModel extends OrderEntity {
     super.id,
     required super.userId,
     required super.items,
+    required super.subtotal,
+    required super.discountAmount,
     required super.totalAmount,
+    super.voucherCode,
     required super.status,
     required super.address,
     required super.phone,
@@ -21,7 +24,10 @@ class OrderModel extends OrderEntity {
       items: (json['items'] as List)
           .map((item) => CartItemModel.fromJson(item))
           .toList(),
+      subtotal: (json['subtotal'] as num?)?.toDouble() ?? (json['totalAmount'] as num).toDouble(),
+      discountAmount: (json['discountAmount'] as num?)?.toDouble() ?? 0.0,
       totalAmount: (json['totalAmount'] as num).toDouble(),
+      voucherCode: json['voucherCode'] as String?,
       status: json['status'] ?? 'pending',
       address: json['address'] ?? '',
       phone: json['phone'] ?? '',
@@ -32,9 +38,11 @@ class OrderModel extends OrderEntity {
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
-      // SỬA TẠI ĐÂY: Sử dụng fromEntity thay vì ép kiểu (as CartItemModel)
       'items': items.map((item) => CartItemModel.fromEntity(item).toJson()).toList(),
+      'subtotal': subtotal,
+      'discountAmount': discountAmount,
       'totalAmount': totalAmount,
+      'voucherCode': voucherCode,
       'status': status,
       'address': address,
       'phone': phone,

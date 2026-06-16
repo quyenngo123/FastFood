@@ -65,7 +65,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         id: const Uuid().v4(),
         userId: authState.user.uid,
         items: widget.cart.items,
+        subtotal: widget.cart.subtotal,
+        discountAmount: widget.cart.discountAmount,
         totalAmount: widget.cart.totalAmount,
+        voucherCode: widget.cart.appliedVoucher?.code,
         status: 'pending',
         createdAt: DateTime.now(),
         address: _addressController.text,
@@ -85,7 +88,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
             if (state is OrderPlacedSuccess) {
               final authState = context.read<AuthBloc>().state;
               if (authState is AuthSuccess) {
-                // SỬA LỖI: Truyền tham số vị trí cho ClearCartEvent
                 context.read<CartBloc>().add(ClearCartEvent(authState.user.uid));
               }
               context.go(AppRoutes.orderSuccess);
@@ -327,6 +329,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Divider(height: 1, color: Color(0xFFF1F1F1)),
           ),
+          _buildPriceRow('Tạm tính', widget.cart.subtotal),
+          if (widget.cart.discountAmount > 0)
+            _buildPriceRow('Giảm giá (${widget.cart.appliedVoucher?.code})', -widget.cart.discountAmount, isDiscount: true),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -340,6 +345,26 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   style: TextStyle(
                       color: AppColors.price, fontWeight: FontWeight.w900, fontSize: 20)),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceRow(String label, double amount, {bool isDiscount = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(
+            '${amount > 0 ? '' : '-'}${_formatPrice(amount.abs())}đ',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: isDiscount ? Colors.green : Colors.black87,
+            ),
           ),
         ],
       ),

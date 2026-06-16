@@ -22,6 +22,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<ClearCartEvent>(_onClearCart);
     on<UpdateCartStateEvent>(_onUpdateCartState);
     on<AddToCartEvent>(_onAddToCart);
+    on<ApplyVoucherEvent>(_onApplyVoucher);
+    on<RemoveVoucherEvent>(_onRemoveVoucher);
   }
 
   Future<void> _onWatchCart(WatchCartEvent event, Emitter<CartState> emit) async {
@@ -36,7 +38,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
   Future<void> _onUpdateCart(UpdateCartEvent event, Emitter<CartState> emit) async {
     try {
-      // Optimistic UI update
       emit(CartLoaded(event.cart));
       await _remoteDataSource.updateCart(CartModel.fromEntity(event.cart));
     } catch (e) {
@@ -67,6 +68,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       final updatedCart = CartEntity(
         userId: event.userId,
         items: items,
+        appliedVoucher: currentCart?.appliedVoucher,
         updatedAt: DateTime.now(),
       );
 
@@ -74,6 +76,28 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       await _remoteDataSource.updateCart(CartModel.fromEntity(updatedCart));
     } catch (e) {
       emit(CartError(e.toString()));
+    }
+  }
+
+  Future<void> _onApplyVoucher(ApplyVoucherEvent event, Emitter<CartState> emit) async {
+    if (state is CartLoaded) {
+      final currentCart = (state as CartLoaded).cart;
+      if (currentCart != null) {
+        final updatedCart = currentCart.copyWith(appliedVoucher: event.voucher);
+        emit(CartLoaded(updatedCart));
+        await _remoteDataSource.updateCart(CartModel.fromEntity(updatedCart));
+      }
+    }
+  }
+
+  Future<void> _onRemoveVoucher(RemoveVoucherEvent event, Emitter<CartState> emit) async {
+    if (state is CartLoaded) {
+      final currentCart = (state as CartLoaded).cart;
+      if (currentCart != null) {
+        final updatedCart = currentCart.copyWith(clearVoucher: true);
+        emit(CartLoaded(updatedCart));
+        await _remoteDataSource.updateCart(CartModel.fromEntity(updatedCart));
+      }
     }
   }
 

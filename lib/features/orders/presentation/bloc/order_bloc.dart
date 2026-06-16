@@ -15,16 +15,21 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   Future<void> _onPlaceOrder(PlaceOrderEvent event, Emitter<OrderState> emit) async {
     emit(OrderLoading());
     try {
+      // Cập nhật: Truyền đầy đủ các trường mới cho OrderModel
       final orderModel = OrderModel(
         id: event.order.id,
         userId: event.order.userId,
         items: event.order.items,
+        subtotal: event.order.subtotal,
+        discountAmount: event.order.discountAmount,
         totalAmount: event.order.totalAmount,
+        voucherCode: event.order.voucherCode,
         status: event.order.status,
         address: event.order.address,
         phone: event.order.phone,
         createdAt: event.order.createdAt,
       );
+      
       await orderRemoteDataSource.createOrder(orderModel);
       emit(OrderPlacedSuccess());
     } catch (e) {

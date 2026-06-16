@@ -8,6 +8,8 @@ import '../../../../config/routes/app_routes.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../food/presentation/bloc/cart_bloc.dart';
+import '../../../explore/presentation/pages/explore_page.dart';
+import '../../../food/presentation/pages/favorite_page.dart';
 import '../widgets/home_header.dart';
 import '../widgets/promo_carousel.dart';
 import '../widgets/category_grid.dart';
@@ -27,7 +29,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Khởi tạo giỏ hàng khi vào trang chủ
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       context.read<CartBloc>().add(WatchCartEvent(user.uid));
@@ -43,51 +44,23 @@ class _HomePageState extends State<HomePage> {
           displayName = authState.user.name ?? authState.user.email.split('@').first;
         }
 
+        // Danh sách các trang cho Bottom Nav
+        final List<Widget> pages = [
+          _HomeTabContent(
+            displayName: displayName,
+            onSearchTap: () => setState(() => _selectedIndex = 1),
+          ),
+          const ExplorePage(),
+          const Center(child: Text('Giỏ hàng')), 
+          const FavoritePage(), 
+          const Center(child: Text('Hồ sơ')), 
+        ];
+
         return Scaffold(
           backgroundColor: const Color(0xFFF8F9FB),
-          body: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                pinned: true,
-                expandedHeight: 190,
-                toolbarHeight: 0,
-                backgroundColor: AppColors.primaryDark,
-                elevation: 0,
-                automaticallyImplyLeading: false,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.parallax,
-                  background: HomeHeader(userName: displayName, showSearchBar: false),
-                ),
-                bottom: const PreferredSize(
-                  preferredSize: Size.fromHeight(80),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(24, 0, 24, 20),
-                    child: HomeSearchBar(),
-                  ),
-                ),
-              ),
-              
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 10),
-                    const PromoCarousel(),
-                    _buildSectionTitle('Danh mục'),
-                    CategoryGrid(),
-                    _buildSectionTitle('Combo đặc sắc 🔥'),
-                    const ComboList(), // Xóa callback cũ vì đã dùng Bloc
-                    const SizedBox(height: 30),
-                  ],
-                ),
-              ),
-            ],
+          body: IndexedStack(
+            index: _selectedIndex,
+            children: pages,
           ),
           bottomNavigationBar: BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {
@@ -101,9 +74,11 @@ class _HomePageState extends State<HomePage> {
                 cartCount: totalItems,
                 onTap: (index) {
                   if (index == 2) {
-                    // Click vào giỏ hàng ở Bottom Nav -> Chuyển sang CartPage
                     context.push(AppRoutes.cart);
+                  } else if (index == 4) {
+                    context.push(AppRoutes.profile);
                   } else {
+                    // Chuyển Tab cho index 0, 1, 3
                     setState(() => _selectedIndex = index);
                   }
                 },
@@ -112,6 +87,66 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       },
+    );
+  }
+}
+
+class _HomeTabContent extends StatelessWidget {
+  final String displayName;
+  final VoidCallback onSearchTap;
+
+  const _HomeTabContent({
+    required this.displayName,
+    required this.onSearchTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          pinned: true,
+          expandedHeight: 190,
+          toolbarHeight: 0,
+          backgroundColor: AppColors.primaryDark,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+            ),
+          ),
+          flexibleSpace: FlexibleSpaceBar(
+            collapseMode: CollapseMode.parallax,
+            background: HomeHeader(
+              userName: displayName, 
+              showSearchBar: false,
+            ),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(80),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+              child: HomeSearchBar(onTap: onSearchTap),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              const PromoCarousel(),
+              _buildSectionTitle('Danh mục'),
+              CategoryGrid(),
+              _buildSectionTitle('Combo đặc sắc 🔥'),
+              const ComboList(),
+              const SizedBox(height: 30),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -132,6 +167,40 @@ class _HomePageState extends State<HomePage> {
                   fontSize: 13,
                   fontWeight: FontWeight.w600)),
         ],
+      ),
+    );
+  }
+}
+
+class HomeSearchBar extends StatelessWidget {
+  final VoidCallback onTap;
+  const HomeSearchBar({super.key, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 54,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            )
+          ],
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.search, color: Colors.grey, size: 20),
+            SizedBox(width: 12),
+            Text('Tìm món ăn bạn yêu thích...', style: TextStyle(color: Colors.grey, fontSize: 14)),
+          ],
+        ),
       ),
     );
   }

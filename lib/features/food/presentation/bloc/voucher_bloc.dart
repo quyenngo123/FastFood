@@ -1,10 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/datasources/voucher_remote_data_source.dart';
-import 'voucher_event.dart';
-import 'voucher_state.dart';
+import 'package:fash_food/features/food/data/datasources/voucher_remote_data_source.dart';
+import 'package:fash_food/features/food/presentation/bloc/voucher_event.dart';
+import 'package:fash_food/features/food/presentation/bloc/voucher_state.dart';
 
-export 'voucher_event.dart';
-export 'voucher_state.dart';
+// Đảm bảo export để các file khác sử dụng đồng nhất kiểu dữ liệu
+export 'package:fash_food/features/food/presentation/bloc/voucher_event.dart';
+export 'package:fash_food/features/food/presentation/bloc/voucher_state.dart';
 
 class VoucherBloc extends Bloc<VoucherEvent, VoucherState> {
   final VoucherRemoteDataSource _remoteDataSource;
