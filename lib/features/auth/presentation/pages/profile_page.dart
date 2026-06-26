@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../food/presentation/pages/favorite_page.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -15,6 +14,7 @@ class ProfilePage extends StatelessWidget {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthLoggedOut) {
+          // Chuyển hướng về trang login và xóa sạch stack cũ
           context.go(AppRoutes.login);
         } else if (state is AuthFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -32,6 +32,9 @@ class ProfilePage extends StatelessWidget {
           foregroundColor: Colors.black,
         ),
         body: BlocBuilder<AuthBloc, AuthState>(
+          // Không rebuild giao diện khi trạng thái là AuthLoggedOut
+          // Điều này giúp giữ lại giao diện Profile cho đến khi Navigator thực hiện chuyển trang
+          buildWhen: (previous, current) => current is! AuthLoggedOut,
           builder: (context, state) {
             if (state is AuthSuccess) {
               final user = state.user;
@@ -51,7 +54,8 @@ class ProfilePage extends StatelessWidget {
             if (state is AuthLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            return const Center(child: Text('Vui lòng đăng nhập'));
+            // Trả về widget trống thay vì text thông báo để tránh gây khó chịu khi đang chuyển hướng
+            return const SizedBox.shrink();
           },
         ),
       ),
@@ -84,7 +88,7 @@ class ProfilePage extends StatelessWidget {
                 right: 0,
                 child: GestureDetector(
                   onTap: () {
-                    // Navigate to edit profile or change avatar
+                    context.push(AppRoutes.settings);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(4),
@@ -150,38 +154,25 @@ class ProfilePage extends StatelessWidget {
           _buildMenuItem(
             icon: Icons.confirmation_number_outlined,
             title: 'Vouchers của tôi',
-            onTap: ()
-              // Navigation to vouchers
-            => context.push(AppRoutes.vouchers),
+            onTap: () => context.push(AppRoutes.vouchers),
           ),
           _divider(),
           _buildMenuItem(
             icon: Icons.favorite_border,
             title: 'Món ăn yêu thích',
-            onTap: () {
-
-              context.push(AppRoutes.favorites);
-              // Navigation to favorites
-            },
+            onTap: () => context.push(AppRoutes.favorites),
           ),
-         // _buildMenuItem(
-
-           // icon: Icons.notifications_none_rounded, // Icon thông báo
-           // title: 'Thông báo',
-           // badgeCount: 3, // Giả sử có 3 thông báo mới (có thể lấy từ Bloc)
-           // onTap: () {
-              // Điều hướng đến trang thông báo
-             // context.push(AppRoutes.notifications);
-            //},
-          //),
-
+          _divider(),
+          _buildMenuItem(
+            icon: Icons.notifications_none_rounded,
+            title: 'Thông báo',
+            onTap: () => context.push(AppRoutes.notifications),
+          ),
           _divider(),
           _buildMenuItem(
             icon: Icons.settings_outlined,
             title: 'Cài đặt',
-            onTap: () {
-              // Navigation to settings
-            },
+            onTap: () => context.push(AppRoutes.settings),
           ),
         ],
       ),
@@ -228,6 +219,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   void _showLogoutDialog(BuildContext context) {
+    final profileContext = context;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -241,7 +233,7 @@ class ProfilePage extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<AuthBloc>().add(const LogoutRequested());
+              profileContext.read<AuthBloc>().add(const LogoutRequested());
             },
             child: const Text('ĐĂNG XUẤT', style: TextStyle(color: Colors.redAccent)),
           ),

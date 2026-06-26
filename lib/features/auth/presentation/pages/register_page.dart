@@ -21,9 +21,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _agreeToTerms = false;
 
   @override
   void dispose() {
@@ -126,11 +126,44 @@ class _RegisterPageState extends State<RegisterPage> {
                               icon: Icon(_obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                             ),
                           ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: Checkbox(
+                                  value: _agreeToTerms,
+                                  onChanged: (value) => setState(() => _agreeToTerms = value ?? false),
+                                  activeColor: const Color(0xFF0D47A1),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: 'Tôi đồng ý với ',
+                                    style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                                    children: const [
+                                      TextSpan(
+                                        text: 'Điều khoản & Chính sách',
+                                        style: TextStyle(
+                                          color: Color(0xFF0D47A1),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 28),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: isLoading ? null : () {
+                              onPressed: (isLoading || !_agreeToTerms) ? null : () {
                                 context.read<AuthBloc>().add(
                                   RegisterSubmitted(
                                     fullName: _fullNameController.text.trim(),
@@ -143,8 +176,10 @@ class _RegisterPageState extends State<RegisterPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF0D47A1),
                                 foregroundColor: Colors.white,
+                                disabledBackgroundColor: Colors.grey[300],
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                elevation: _agreeToTerms ? 2 : 0,
                               ),
                               child: isLoading
                                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))

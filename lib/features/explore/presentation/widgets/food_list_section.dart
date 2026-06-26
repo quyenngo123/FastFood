@@ -6,11 +6,13 @@ import '../../../food/domain/entities/food_entity.dart';
 class FoodListSection extends StatelessWidget {
   final List<FoodEntity> foods;
   final String? title;
+  final Function(FoodEntity)? onAddToCart; // Thêm callback này
 
   const FoodListSection({
     super.key,
     required this.foods,
     this.title,
+    this.onAddToCart,
   });
 
   String _formatPrice(double price) {
@@ -131,13 +133,16 @@ class FoodListSection extends StatelessWidget {
                           fontSize: 13,
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
+                      GestureDetector(
+                        onTap: () => onAddToCart?.call(food),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.add, color: Colors.white, size: 16),
                         ),
-                        child: const Icon(Icons.add, color: Colors.white, size: 16),
                       ),
                     ],
                   ),

@@ -4,6 +4,10 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/profile_page.dart';
 import '../../features/auth/presentation/pages/address_page.dart';
+import '../../features/auth/presentation/pages/settings_page.dart';
+import '../../features/auth/presentation/pages/edit_profile_page.dart';
+import '../../features/auth/presentation/pages/change_password_page.dart';
+import '../../features/auth/presentation/pages/policy_page.dart';
 import '../../features/auth/presentation/widgets/splash_page.dart';
 import '../../features/food/domain/entities/food_entity.dart';
 import '../../features/food/domain/entities/cart_entity.dart';
@@ -18,6 +22,7 @@ import '../../features/orders/presentation/pages/order_success_page.dart';
 import '../../features/orders/presentation/pages/order_history_page.dart';
 import '../../features/orders/presentation/pages/order_detail_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/pages/notification_page.dart';
 import 'app_routes.dart';
 
 class AppRouter {
@@ -111,7 +116,31 @@ class AppRouter {
         name: 'address',
         builder: (context, state) => const AddressPage(),
       ),
-     
+      GoRoute(
+        path: AppRoutes.notifications,
+        name: 'notifications',
+        builder: (context, state) => const NotificationPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        name: 'settings',
+        builder: (context, state) => const SettingsPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        name: 'edit-profile',
+        builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: AppRoutes.changePassword,
+        name: 'change-password',
+        builder: (context, state) => const ChangePasswordPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.policy,
+        name: 'policy',
+        builder: (context, state) => const PolicyPage(),
+      ),
     ],
     errorBuilder: (context, state) => const Scaffold(
       body: Center(child: Text('Trang không tìm thấy')),

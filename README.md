@@ -1,81 +1,68 @@
 # 🍔 FastFood App - Flutter Project
 
-Dự án ứng dụng đặt đồ ăn nhanh được xây dựng bằng Flutter, áp dụng các tiêu chuẩn lập trình hiện đại và cấu trúc mã nguồn sạch.
+Dự án ứng dụng đặt đồ ăn nhanh hiện đại, áp dụng cấu trúc **Clean Architecture** và các tiêu chuẩn UI/UX mới nhất. Ứng dụng tích hợp hệ thống quản lý trạng thái chuyên nghiệp và kết nối thời gian thực với Firebase.
+
+## 🌟 Tính năng nổi bật & UI/UX
+
+### 1. Hệ thống Yêu thích (Favorite System)
+- **Tương tác mượt mà**: Biểu tượng trái tim trắng (🤍) trên nền mờ, tự động chuyển sang đỏ rực (❤️) khi tap.
+- **Trang Yêu thích riêng biệt**: Quản lý danh sách món ăn quan tâm, tích hợp ngay trong thanh điều hướng chính.
+
+### 2. Thiết kế Voucher "Vé giảm giá" (Ticket Design)
+- **UI sáng tạo**: Sử dụng `CustomClipper` tạo vết cắt bán nguyệt và `CustomPainter` vẽ đường kẻ đứt quãng (Dashed Line) tạo hiệu ứng tấm vé thật.
+- **Trạng thái thông minh**: Tự động phân loại voucher: *Dùng ngay*, *Chưa đủ điều kiện (đơn tối thiểu)*, *Hết hạn* (tự động xám hóa).
+
+### 3. Food Page & Giỏ hàng đồng bộ
+- **Header hiện đại**: Header màu xanh Primary đặc trưng với bo góc lớn (30px), tích hợp Badge giỏ hàng thời gian thực.
+- **Smart Image Loading**: Cơ chế tự động nhận diện và hiển thị ảnh từ **Firebase URL** hoặc **Local Assets**, tích hợp fallback khi link lỗi.
+- **Lọc món ăn**: Thanh filter linh hoạt theo danh mục (Pizza, Burger, Lẩu, Ăn vặt...).
+
+### 4. Navigation mượt mà
+- **IndexedStack Navigation**: Chuyển đổi giữa các Tab (Trang chủ, Khám phá, Yêu thích) tức thì, giữ nguyên trạng thái cuộn của người dùng.
+- **GoRouter**: Hệ thống định tuyến mạnh mẽ, xử lý chuyển trang và truyền dữ liệu (Extra) chuyên nghiệp.
 
 ## 🚀 Công nghệ sử dụng
 
-*   **State Management:** [Flutter Bloc](https://pub.dev/packages/flutter_bloc) - Quản lý trạng thái ứng dụng chuyên nghiệp.
-*   **Dependency Injection:** [GetIt](https://pub.dev/packages/get_it) - Quản lý khởi tạo và truy xuất đối tượng (Service Locator).
-*   **Architecture:** **Clean Architecture** - Chia tách rõ ràng giữa Domain, Data và Presentation.
-*   **Backend:** Firebase (Auth, Cloud Firestore).
-*   **Data Handling:** [Equatable](https://pub.dev/packages/equatable) - Hỗ trợ so sánh object tối ưu cho Bloc.
-*   **UI Components:** Custom Painters (Logo, Icons), Google Fonts.
+*   **State Management:** `Flutter Bloc (v9.0.0)` - Quản lý logic tách biệt hoàn toàn khỏi UI.
+*   **Dependency Injection:** `GetIt` - Service Locator để khởi tạo tập trung các DataSources, Repositories, UseCases.
+*   **Backend:** `Firebase (Auth, Cloud Firestore)`.
+*   **Architecture:** `Clean Architecture` (Data -> Domain -> Presentation).
+*   **UI Components:** `Custom Clippers`, `Custom Painters`, `Animated Containers`.
 
-## 📂 Cấu trúc thư mục (Clean Architecture)
-
-Dự án tuân thủ cấu trúc chia theo Feature:
+## 📂 Cấu trúc dự án
 
 ```text
 lib/
-├── core/                   # Cấu hình dùng chung (Theme, Constants, Errors)
-│   └── firebase/           # Scripts Seed dữ liệu mẫu lên Cloud Firestore
-├── features/               # Các tính năng của ứng dụng
-│   ├── auth/               # Feature: Xác thực & Người dùng (User, Address)
-│   ├── food/               # Feature: Sản phẩm & Đơn hàng (Food, Combo, Order, Cart...)
-│   └── home/               # Feature: Trang chủ & Thông báo (Banner, Category, Notification)
-│       ├── data/           # Models (to/from Json/Snapshot), DataSources
-│       ├── domain/         # Entities (Equatable), Repositories Interface
-│       └── presentation/   # Bloc, Pages, Widgets
-├── shared/                 # UI components dùng chung
-└── injection_container.dart # Khởi tạo Dependency Injection (GetIt)
+├── config/                 # Routes (AppRouter, AppRoutes)
+├── core/                   # Theme (AppColors), Firebase Seeding, Utils
+├── features/               # Các tính năng (Clean Architecture)
+│   ├── auth/               # Login, Register, Profile
+│   ├── food/               # Food Page, Cart, Voucher, Favorite
+│   ├── home/               # Banner, Notification
+│   └── orders/             # Checkout, History, Order Detail
+├── shared/                 # Widgets dùng chung (FoodCard...)
+└── injection_container.dart # Nơi đăng ký mọi Dependency (DI)
 ```
 
-## 🔥 Hệ thống Dữ liệu & Firebase (12 Collections)
+## 🔥 Firestore Collections (12 chính)
 
-Dự án đã hoàn thiện bộ khung dữ liệu (Entities & Models) cho 12 collection chính trên Firestore:
+Hệ thống dữ liệu đã được chuẩn hóa cho 12 collection:
+`Users`, `Addresses`, `Foods`, `Categories`, `Combos`, `Vouchers`, `Favorites`, `Carts`, `Orders`, `Reviews`, `Banners`, `Notifications`.
 
-1.  **Users:** Thông tin tài khoản người dùng.
-2.  **Addresses:** Sổ địa chỉ giao hàng.
-3.  **Foods:** Danh sách món ăn.
-4.  **Categories:** Danh mục phân loại (Pizza, Burger, Drink...).
-5.  **Combos:** Các gói combo khuyến mãi.
-6.  **Vouchers:** Mã giảm giá & khuyến mãi.
-7.  **Favorites:** Danh sách món ăn yêu thích của từng user.
-8.  **Carts:** Quản lý giỏ hàng hiện tại.
-9.  **Orders:** Quản lý lịch sử và trạng thái đơn hàng.
-10. **Reviews:** Đánh giá từ khách hàng.
-11. **Banners:** Slider quảng cáo trang chủ.
-12. **Notifications:** Thông báo hệ thống & đơn hàng.
+## 🛠 Hướng dẫn cài đặt
 
-## ✨ Các thành phần đã hoàn thiện
-
-### 1. Tầng Domain (Entities)
-*   Thiết kế 13 thực thể (`Entities`) thuần túy, kế thừa từ `Equatable`.
-*   Tách biệt logic nghiệp vụ khỏi các thư viện bên ngoài.
-
-### 2. Tầng Data (Models & Mock Data)
-*   Triển khai 13 `Models` hỗ trợ `fromJson`, `toJson` và `fromSnapshot` (Firestore).
-*   Xây dựng hệ thống `Mock Data` phong phú cho tất cả các collection.
-
-### 3. Firebase Seeding System
-*   Xây dựng bộ script `Seed` tự động trong `lib/core/firebase/`.
-*   Hỗ trợ đẩy toàn bộ dữ liệu mẫu từ local lên Cloud Firestore chỉ với một lệnh gọi hàm.
-
-### 4. Auth Module (UI & Logic)
-*   **Splash Page:** Hiệu ứng chuyển động Logo 3D.
-*   **Login & Register:** Giao diện hiện đại, tích hợp Bloc xử lý logic và validation.
-
-## 🛠 Hướng dẫn chạy dự án
-
-1.  **Cài đặt thư viện:**
+1.  **Lấy source code & Cài đặt thư viện:**
     ```bash
     flutter pub get
     ```
-2.  **Khởi tạo hệ thống:**
-    Đảm bảo hàm `main()` đã gọi `await di.init()`.
-3.  **Đổ dữ liệu mẫu (Seeding):**
-    Gọi các hàm `Seed...` trong thư mục `lib/core/firebase/` để khởi tạo dữ liệu trên Firestore của bạn.
+2.  **Cấu hình Firebase:**
+    Đảm bảo project đã được cấu hình Firebase thông qua FlutterFire CLI.
+3.  **Khởi tạo dữ liệu (Seeding):**
+    Mở thư mục `lib/core/firebase/` để xem các tập lệnh khởi tạo dữ liệu mẫu lên Firestore của bạn.
 4.  **Chạy ứng dụng:**
     ```bash
     flutter run
     ```
+
+---
+*Dự án đang được phát triển tích cực với các bản cập nhật UI hàng ngày.*

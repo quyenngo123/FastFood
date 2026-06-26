@@ -1,18 +1,21 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fash_food/features/food/data/datasources/voucher_remote_data_source.dart';
-import 'package:fash_food/features/food/presentation/bloc/voucher_event.dart';
-import 'package:fash_food/features/food/presentation/bloc/voucher_state.dart';
+import '../../domain/usecases/get_vouchers_usecase.dart';
+import '../../domain/usecases/get_voucher_by_code_usecase.dart';
+import 'voucher_event.dart';
+import 'voucher_state.dart';
 
-// Đảm bảo export để các file khác sử dụng đồng nhất kiểu dữ liệu
-export 'package:fash_food/features/food/presentation/bloc/voucher_event.dart';
-export 'package:fash_food/features/food/presentation/bloc/voucher_state.dart';
+export 'voucher_event.dart';
+export 'voucher_state.dart';
 
 class VoucherBloc extends Bloc<VoucherEvent, VoucherState> {
-  final VoucherRemoteDataSource _remoteDataSource;
+  final GetVouchersUseCase _getVouchersUseCase;
+  final GetVoucherByCodeUseCase _getVoucherByCodeUseCase;
 
   VoucherBloc({
-    required VoucherRemoteDataSource remoteDataSource,
-  })  : _remoteDataSource = remoteDataSource,
+    required GetVouchersUseCase getVouchersUseCase,
+    required GetVoucherByCodeUseCase getVoucherByCodeUseCase,
+  })  : _getVouchersUseCase = getVouchersUseCase,
+        _getVoucherByCodeUseCase = getVoucherByCodeUseCase,
         super(VoucherInitial()) {
     on<GetVouchersEvent>(_onGetVouchers);
     on<GetVoucherByCodeEvent>(_onGetVoucherByCode);
@@ -21,7 +24,7 @@ class VoucherBloc extends Bloc<VoucherEvent, VoucherState> {
   Future<void> _onGetVouchers(GetVouchersEvent event, Emitter<VoucherState> emit) async {
     emit(VoucherLoading());
     try {
-      final vouchers = await _remoteDataSource.getVouchers();
+      final vouchers = await _getVouchersUseCase();
       emit(VoucherLoaded(vouchers));
     } catch (e) {
       emit(VoucherError(e.toString()));
@@ -31,7 +34,7 @@ class VoucherBloc extends Bloc<VoucherEvent, VoucherState> {
   Future<void> _onGetVoucherByCode(GetVoucherByCodeEvent event, Emitter<VoucherState> emit) async {
     emit(VoucherLoading());
     try {
-      final voucher = await _remoteDataSource.getVoucherByCode(event.code);
+      final voucher = await _getVoucherByCodeUseCase(event.code);
       emit(VoucherSingleLoaded(voucher));
     } catch (e) {
       emit(VoucherError(e.toString()));

@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/string_utils.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../food/domain/entities/cart_item_entity.dart';
+import '../../../food/domain/entities/food_entity.dart';
+import '../../../food/presentation/bloc/cart_bloc.dart';
 import '../../../home/presentation/widgets/category_grid.dart';
 import '../../../home/presentation/widgets/combo_list.dart';
 import '../../../food/presentation/bloc/food_bloc.dart';
@@ -32,6 +38,35 @@ class _ExplorePageState extends State<ExplorePage> {
     context.read<FoodBloc>().add(WatchFoodsEvent());
   }
 
+  void _handleAddToCart(FoodEntity food) {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is AuthSuccess) {
+      context.read<CartBloc>().add(AddToCartEvent(
+            userId: authState.user.uid,
+            item: CartItemEntity(
+              productId: food.id,
+              name: food.name,
+              image: food.imageUrl,
+              price: food.price,
+              quantity: 1,
+            ),
+          ));
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã thêm ${food.name} vào giỏ hàng'),
+          duration: const Duration(seconds: 1),
+          backgroundColor: AppColors.primary,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng đăng nhập để thực hiện')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,13 +84,18 @@ class _ExplorePageState extends State<ExplorePage> {
               return _buildEmptyState();
             }
 
-            // Logic lọc món ăn theo tìm kiếm
-            final searchResults = allFoods.where((food) {
-              final name = food.name.toLowerCase();
-              final category = food.category.toLowerCase();
-              final query = _searchQuery.toLowerCase();
-              return name.contains(query) || category.contains(query);
-            }).toList();
+            List<FoodEntity> searchResults = [];
+            if (_searchQuery.isNotEmpty) {
+              searchResults = allFoods.where((food) {
+                return StringUtils.getSearchScore(food.name, _searchQuery) > 0;
+              }).toList();
+
+              searchResults.sort((a, b) {
+                int scoreA = StringUtils.getSearchScore(a.name, _searchQuery);
+                int scoreB = StringUtils.getSearchScore(b.name, _searchQuery);
+                return scoreB.compareTo(scoreA); 
+              });
+            }
 
             return RefreshIndicator(
               onRefresh: () async {
@@ -69,38 +109,34 @@ class _ExplorePageState extends State<ExplorePage> {
                   _buildSliverAppBar(),
                   
                   if (_searchQuery.isNotEmpty) ...[
-                    // CHẾ ĐỘ TÌM KIẾM: Hiện kết quả search
                     SliverToBoxAdapter(
-                      child: searchResults.isEmpty 
-                        ? _buildNoResultState()
-                        : FoodListSection(
-                            foods: searchResults, 
-                            title: 'Kết quả tìm kiếm cho "$_searchQuery"',
-                          ),
+                      child: searchResults.isEmpty
+                          ? _buildNoResultState()
+                          : FoodListSection(
+                              foods: searchResults,
+                              title: 'Kết quả tìm kiếm cho "$_searchQuery"',
+                              onAddToCart: _handleAddToCart, // Thêm dòng này
+                            ),
                     ),
                   ] else ...[
-                    // CHẾ ĐỘ KHÁM PHÁ: Hiện các Section gợi ý
                     SliverToBoxAdapter(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 15),
                           _buildSectionHeader('Bạn muốn ăn gì hôm nay?', showViewAll: false),
-                          CategoryGrid(), // Xóa const vì constructor không phải là const
-
+                          CategoryGrid(),
                           RecentFoodsSection(foods: allFoods.take(5).toList()),
-
                           if (allFoods.where((f) => f.isPromo).isNotEmpty)
                             SuggestionSection(suggestions: allFoods.where((f) => f.isPromo).toList()),
-
                           BestSellerSection(foods: allFoods.where((f) => f.isPopular).toList()),
-
                           HighlyRatedSection(foods: allFoods.where((f) => f.rating >= 4.8).toList()),
-
                           _buildSectionHeader('Combo tiết kiệm 🎁'),
                           const ComboList(),
-
-                          FoodListSection(foods: allFoods),
+                          FoodListSection(
+                            foods: allFoods,
+                            onAddToCart: _handleAddToCart, // Thêm dòng này
+                          ),
                         ],
                       ),
                     ),
@@ -124,7 +160,7 @@ class _ExplorePageState extends State<ExplorePage> {
     return SliverAppBar(
       pinned: true,
       floating: true,
-      expandedHeight: 150, // Tăng nhẹ từ 140 lên 150
+      expandedHeight: 150,
       backgroundColor: AppColors.primaryDark,
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -139,14 +175,14 @@ class _ExplorePageState extends State<ExplorePage> {
           ),
         ),
         centerTitle: false,
-        titlePadding: const EdgeInsets.only(left: 24, bottom: 85), // Đẩy title lên cao hơn một chút (từ 75 lên 85)
+        titlePadding: const EdgeInsets.only(left: 24, bottom: 85),
         title: const Text(
           'Khám phá món ngon',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
         ),
       ),
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(70), // Tăng từ 60 lên 70 để tránh overflow
+        preferredSize: const Size.fromHeight(70),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
           child: ExploreSearchBar(

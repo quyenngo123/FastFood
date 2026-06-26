@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">fash_food</string>
+    <string name="facebook_app_id">880248844485644</string>
+    <string name="facebook_client_token">784b5e376fa859cab1af90612624231a</string>
+    <string name="fb_login_protocol_scheme">fb880248844485644</string>
+</resources>

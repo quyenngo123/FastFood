@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/user_entity.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
@@ -7,7 +8,6 @@ abstract class AuthEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// Thêm event này
 class CheckAuthRequested extends AuthEvent {
   const CheckAuthRequested();
 }
@@ -40,6 +40,14 @@ class RegisterSubmitted extends AuthEvent {
 
   @override
   List<Object?> get props => [fullName, email, password, confirmPassword];
+}
+
+class UpdateProfileRequested extends AuthEvent {
+  final UserEntity user;
+  const UpdateProfileRequested(this.user);
+
+  @override
+  List<Object?> get props => [user];
 }
 
 class GoogleLoginRequested extends AuthEvent {

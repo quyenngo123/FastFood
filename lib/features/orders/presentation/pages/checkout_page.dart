@@ -5,7 +5,9 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../config/routes/app_routes.dart';
+import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../food/domain/entities/cart_entity.dart';
 import '../../../food/presentation/bloc/cart_bloc.dart';
@@ -61,6 +63,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
       final authState = context.read<AuthBloc>().state;
       if (authState is! AuthSuccess) return;
 
+      final currentUser = authState.user;
+
+      if (currentUser.phone != _phoneController.text || 
+          currentUser.address != _addressController.text ||
+          currentUser.name != _nameController.text) {
+        
+        final updatedUser = UserEntity(
+          uid: currentUser.uid,
+          email: currentUser.email,
+          name: _nameController.text,
+          phone: _phoneController.text,
+          address: _addressController.text,
+          photoUrl: currentUser.photoUrl,
+        );
+        
+        context.read<AuthBloc>().add(UpdateProfileRequested(updatedUser));
+      }
+
       final order = OrderEntity(
         id: const Uuid().v4(),
         userId: authState.user.uid,
@@ -115,6 +135,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildMissingInfoNotice(),
                 _buildSectionTitle('Thông tin giao hàng', Icons.local_shipping_rounded),
                 _buildInfoCard(),
                 const SizedBox(height: 24),
@@ -130,6 +151,42 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         bottomNavigationBar: _buildBottomBar(),
       ),
+    );
+  }
+
+  Widget _buildMissingInfoNotice() {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        bool isMissing = false;
+        if (state is AuthSuccess) {
+          isMissing = (state.user.phone == null || state.user.phone!.isEmpty || 
+                       state.user.address == null || state.user.address!.isEmpty);
+        }
+
+        if (!isMissing) return const SizedBox.shrink();
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.orange.withOpacity(0.3)),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.orange, size: 20),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Vui lòng bổ sung SĐT và địa chỉ để chúng tôi giao hàng cho bạn nhé!',
+                  style: TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -193,6 +250,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
             icon: Icons.location_on_rounded,
             hint: 'Nhập địa chỉ giao hàng',
             maxLines: 2,
+            // Sử dụng visiblePassword để tắt hoàn toàn các bộ lọc bàn phím gây lỗi gõ dấu tiếng Việt
+            keyboardType: TextInputType.visiblePassword, 
           ),
         ],
       ),
@@ -230,6 +289,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 controller: controller,
                 maxLines: maxLines,
                 keyboardType: keyboardType,
+                autocorrect: false,
+                enableSuggestions: false,
+                smartDashesType: SmartDashesType.disabled,
+                smartQuotesType: SmartQuotesType.disabled,
+                textCapitalization: TextCapitalization.none,
                 style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,

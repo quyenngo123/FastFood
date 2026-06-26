@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fash_food/injection_container.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_state.dart';
@@ -136,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
 
-                      // --- PHẦN MỚI THÊM: SOCIAL LOGIN ---
+                      // SOCIAL LOGIN
                       const SizedBox(height: 32),
                       Row(
                         children: [
@@ -159,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                               icon: Image.asset ('assets/icons/google.png'),
                               label: 'Google',
                               onPressed: isLoading ? null : () {
-                                // Logic đăng nhập Google
+                                context.read<AuthBloc>().add(const GoogleLoginRequested());
                               },
                             ),
                           ),
@@ -169,13 +168,12 @@ class _LoginPageState extends State<LoginPage> {
                               icon: Image.asset ('assets/icons/facebook.png'),
                               label: 'Facebook',
                               onPressed: isLoading ? null : () {
-                                // Logic đăng nhập Facebook
+                                context.read<AuthBloc>().add(const FacebookLoginRequested());
                               },
                             ),
                           ),
                         ],
                       ),
-                      // --- KẾT THÚC PHẦN SOCIAL LOGIN ---
 
                       const SizedBox(height: 32),
                       Row(

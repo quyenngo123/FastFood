@@ -1,13 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/datasources/order_remote_datasource.dart';
-import '../../data/models/order_model.dart';
+import '../../domain/usecases/create_order_usecase.dart';
+import '../../domain/usecases/get_orders_usecase.dart';
 import 'order_event.dart';
 import 'order_state.dart';
 
 class OrderBloc extends Bloc<OrderEvent, OrderState> {
-  final OrderRemoteDataSource orderRemoteDataSource;
+  final CreateOrderUseCase _createOrderUseCase;
+  final GetOrdersUseCase _getOrdersUseCase;
 
-  OrderBloc({required this.orderRemoteDataSource}) : super(OrderInitial()) {
+  OrderBloc({
+    required CreateOrderUseCase createOrderUseCase,
+    required GetOrdersUseCase getOrdersUseCase,
+  })  : _createOrderUseCase = createOrderUseCase,
+        _getOrdersUseCase = getOrdersUseCase,
+        super(OrderInitial()) {
     on<PlaceOrderEvent>(_onPlaceOrder);
     on<GetOrderHistoryEvent>(_onGetOrderHistory);
   }
@@ -15,22 +21,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   Future<void> _onPlaceOrder(PlaceOrderEvent event, Emitter<OrderState> emit) async {
     emit(OrderLoading());
     try {
-      // Cập nhật: Truyền đầy đủ các trường mới cho OrderModel
-      final orderModel = OrderModel(
-        id: event.order.id,
-        userId: event.order.userId,
-        items: event.order.items,
-        subtotal: event.order.subtotal,
-        discountAmount: event.order.discountAmount,
-        totalAmount: event.order.totalAmount,
-        voucherCode: event.order.voucherCode,
-        status: event.order.status,
-        address: event.order.address,
-        phone: event.order.phone,
-        createdAt: event.order.createdAt,
-      );
-      
-      await orderRemoteDataSource.createOrder(orderModel);
+      await _createOrderUseCase(event.order);
       emit(OrderPlacedSuccess());
     } catch (e) {
       emit(OrderFailure(e.toString()));
@@ -40,7 +31,7 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
   Future<void> _onGetOrderHistory(GetOrderHistoryEvent event, Emitter<OrderState> emit) async {
     emit(OrderLoading());
     try {
-      final orders = await orderRemoteDataSource.getOrders(event.userId);
+      final orders = await _getOrdersUseCase(event.userId);
       emit(OrderSuccess(orders));
     } catch (e) {
       emit(OrderFailure(e.toString()));

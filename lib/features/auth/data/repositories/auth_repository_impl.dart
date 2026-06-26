@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repositories.dart';
 import '../datasources/user_remote_data_source.dart';
@@ -19,7 +21,6 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final user = userCredential.user!;
       
-      // Lấy profile đầy đủ từ Firestore
       final userProfile = await _userRemoteDataSource.getUserProfile(user.uid);
 
       if (userProfile != null) {
@@ -68,6 +69,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     await _firebaseAuth.signOut();
+    await GoogleSignIn().signOut();
+    await FacebookAuth.instance.logOut();
   }
 
   @override
@@ -75,7 +78,6 @@ class AuthRepositoryImpl implements AuthRepository {
     final user = _firebaseAuth.currentUser;
     if (user == null) return null;
     
-    // Luôn ưu tiên lấy dữ liệu đầy đủ từ Firestore (bao gồm SĐT và Địa chỉ)
     final userProfile = await _userRemoteDataSource.getUserProfile(user.uid);
     
     if (userProfile != null) {
@@ -104,9 +106,65 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<UserEntity> loginWithGoogle() => throw UnimplementedError();
+  Future<UserEntity> loginWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) throw Exception('Đăng nhập Google bị hủy');
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final User user = userCredential.user!;
+
+      final userProfile = await _userRemoteDataSource.getUserProfile(user.uid);
+      if (userProfile == null) {
+        final newUser = UserModel(
+          uid: user.uid,
+          email: user.email ?? '',
+          name: user.displayName ?? '',
+          photoUrl: user.photoURL,
+        );
+        await _userRemoteDataSource.updateUserProfile(newUser);
+        return newUser;
+      }
+      return userProfile;
+    } catch (e) {
+      throw Exception('Lỗi đăng nhập Google: $e');
+    }
+  }
+
   @override
-  Future<UserEntity> loginWithFacebook() => throw UnimplementedError();
+  Future<UserEntity> loginWithFacebook() async {
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+      if (result.status == LoginStatus.success) {
+        final OAuthCredential credential = FacebookAuthProvider.credential(result.accessToken!.tokenString);
+        final UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+        final User user = userCredential.user!;
+
+        final userProfile = await _userRemoteDataSource.getUserProfile(user.uid);
+        if (userProfile == null) {
+          final newUser = UserModel(
+            uid: user.uid,
+            email: user.email ?? '',
+            name: user.displayName ?? '',
+            photoUrl: user.photoURL,
+          );
+          await _userRemoteDataSource.updateUserProfile(newUser);
+          return newUser;
+        }
+        return userProfile;
+      } else {
+        throw Exception('Đăng nhập Facebook thất bại: ${result.message}');
+      }
+    } catch (e) {
+      throw Exception('Lỗi đăng nhập Facebook: $e');
+    }
+  }
 
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {

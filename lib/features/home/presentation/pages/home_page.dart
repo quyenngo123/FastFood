@@ -15,6 +15,7 @@ import '../widgets/promo_carousel.dart';
 import '../widgets/category_grid.dart';
 import '../widgets/combo_list.dart';
 import '../widgets/home_bottom_nav.dart';
+import '../bloc/notification_bloc.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,6 +33,7 @@ class _HomePageState extends State<HomePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       context.read<CartBloc>().add(WatchCartEvent(user.uid));
+      context.read<NotificationBloc>().add(WatchNotificationsEvent(user.uid));
     }
   }
 
@@ -52,7 +54,9 @@ class _HomePageState extends State<HomePage> {
           ),
           const ExplorePage(),
           const Center(child: Text('Giỏ hàng')), 
-          const FavoritePage(), 
+          FavoritePage(onBack: () {
+            setState(() => _selectedIndex = 0);
+          }), 
           const Center(child: Text('Hồ sơ')), 
         ];
 
@@ -78,7 +82,6 @@ class _HomePageState extends State<HomePage> {
                   } else if (index == 4) {
                     context.push(AppRoutes.profile);
                   } else {
-                    // Chuyển Tab cho index 0, 1, 3
                     setState(() => _selectedIndex = index);
                   }
                 },

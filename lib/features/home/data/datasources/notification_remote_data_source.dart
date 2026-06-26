@@ -6,18 +6,16 @@ class NotificationRemoteDataSource {
 
   NotificationRemoteDataSource({required this.firestore});
 
-  /// Lấy danh sách thông báo của người dùng
-  Future<List<NotificationModel>> getNotifications(String userId) async {
-    try {
-      final snapshot = await firestore
-          .collection('notifications')
-          .where('userId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
-          .get();
+  /// Theo dõi danh sách thông báo theo thời gian thực
+  Stream<List<NotificationModel>> watchNotifications(String userId) {
+    return firestore
+        .collection('notifications')
+        .where('userId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
       return snapshot.docs.map((doc) => NotificationModel.fromSnapshot(doc)).toList();
-    } catch (e) {
-      throw Exception('Lỗi khi lấy danh sách thông báo: $e');
-    }
+    });
   }
 
   /// Đánh dấu thông báo đã đọc

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/datasources/notification_remote_data_source.dart';
+import '../../domain/usecases/watch_notifications_usecase.dart';
+import '../../domain/usecases/mark_notification_as_read_usecase.dart';
 import 'notification_event.dart';
 import 'notification_state.dart';
 
@@ -8,11 +9,14 @@ export 'notification_event.dart';
 export 'notification_state.dart';
 
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
-  final NotificationRemoteDataSource _remoteDataSource;
+  final WatchNotificationsUseCase _watchNotificationsUseCase;
+  final MarkNotificationAsReadUseCase _markNotificationAsReadUseCase;
 
   NotificationBloc({
-    required NotificationRemoteDataSource remoteDataSource,
-  })  : _remoteDataSource = remoteDataSource,
+    required WatchNotificationsUseCase watchNotificationsUseCase,
+    required MarkNotificationAsReadUseCase markNotificationAsReadUseCase,
+  })  : _watchNotificationsUseCase = watchNotificationsUseCase,
+        _markNotificationAsReadUseCase = markNotificationAsReadUseCase,
         super(NotificationInitial()) {
     on<WatchNotificationsEvent>(_onWatchNotifications);
     on<MarkNotificationAsReadEvent>(_onMarkAsRead);
@@ -22,21 +26,28 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   Future<void> _onWatchNotifications(
       WatchNotificationsEvent event, Emitter<NotificationState> emit) async {
     emit(NotificationLoading());
-    try {
-      final notifications = await _remoteDataSource.getNotifications(event.userId);
-      emit(NotificationLoaded(notifications));
-    } catch (error) {
-      emit(NotificationError(error.toString()));
-    }
+    
+    // emit.forEach tự động quản lý vòng đời của Stream (mở/đóng/hủy subscription cũ)
+    await emit.forEach(
+      _watchNotificationsUseCase(event.userId),
+      onData: (notifications) {
+        print('DEBUG_NOTI: Nhận ${notifications.length} thông báo từ Firestore cho UID: ${event.userId}');
+        return NotificationLoaded(notifications);
+      },
+      onError: (error, stackTrace) {
+        print('DEBUG_NOTI_ERROR: $error');
+        return NotificationError(error.toString());
+      },
+    );
   }
 
   Future<void> _onMarkAsRead(
       MarkNotificationAsReadEvent event, Emitter<NotificationState> emit) async {
     try {
-      await _remoteDataSource.markAsRead(event.notificationId);
-      // Re-fetch or update state locally if userId is available in the bloc state or event
+      await _markNotificationAsReadUseCase(event.notificationId);
+      // Firestore Stream sẽ tự động đẩy dữ liệu mới về, không cần emit thủ công
     } catch (e) {
-      emit(NotificationError(e.toString()));
+      print('Error marking notification as read: $e');
     }
   }
 

@@ -14,19 +14,15 @@ import 'package:fash_food/features/food/presentation/bloc/food_bloc.dart';
 import 'package:fash_food/features/food/presentation/bloc/cart_bloc.dart';
 import 'package:fash_food/features/food/presentation/bloc/voucher_bloc.dart';
 import 'package:fash_food/features/orders/presentation/bloc/order_bloc.dart';
-import 'package:fash_food/core/firebase/seed_data.dart';
+import 'package:fash_food/features/home/presentation/bloc/notification_bloc.dart';
+import 'package:fash_food/features/food/presentation/bloc/favorite_bloc.dart';
 
-import 'features/food/presentation/bloc/favorite_bloc.dart';
-
-
+import 'features/auth/presentation/widgets/splash_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await di.init();
-  
-  // Seed data món ăn
-  await SeedFoods.uploadFoods();
   
   runApp(const MyApp());
 }
@@ -45,12 +41,17 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<OrderBloc>()),
         BlocProvider(create: (_) => sl<VoucherBloc>()),
         BlocProvider(create: (_) => sl<FavoriteBloc>()),
-        // Thêm VoucherBloc vào đây
+        BlocProvider(create: (_) => sl<NotificationBloc>()),
       ],
       child: MaterialApp.router(
         title: 'FastFood',
         debugShowCheckedModeBanner: false,
         routerConfig: AppRouter.router,
+
+       //child: MaterialApp(
+        // title: 'FastFood',
+        // debugShowCheckedModeBanner: false,
+        // home: const SplashPage(),
       ),
     );
   }

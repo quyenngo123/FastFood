@@ -129,7 +129,7 @@ class ComboData {
       id: 'c006',
       name: 'Combo Hàn Quốc Yêu Thích',
       description: '2 Kimbap Cổ Điển + 1 Kimbap Bulgogi + 2 Trà Sữa Matcha',
-      image: 'https://https://images.unsplash.com/photo-1590301157284-d99694d93f3a?w=760&h=440&fit=crop',
+      image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&q=80&w=800',
       originalPrice: 282000,
       comboPrice: 210000,
       discountPercent: 26,

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/datasources/food_remote_data_source.dart';
+import '../../domain/usecases/watch_foods_usecase.dart';
 import 'food_event.dart';
 import 'food_state.dart';
 
@@ -8,10 +8,10 @@ export 'food_event.dart';
 export 'food_state.dart';
 
 class FoodBloc extends Bloc<FoodEvent, FoodState> {
-  final FoodRemoteDataSource _remoteDataSource;
+  final WatchFoodsUseCase _watchFoodsUseCase;
 
-  FoodBloc({required FoodRemoteDataSource remoteDataSource})
-      : _remoteDataSource = remoteDataSource,
+  FoodBloc({required WatchFoodsUseCase watchFoodsUseCase})
+      : _watchFoodsUseCase = watchFoodsUseCase,
         super(FoodInitial()) {
     on<WatchFoodsEvent>(_onWatchFoods);
     on<UpdateFoodsEvent>(_onUpdateFoods);
@@ -23,7 +23,7 @@ class FoodBloc extends Bloc<FoodEvent, FoodState> {
     
     // Sử dụng emit.forEach để tự động cập nhật State mỗi khi Firestore thay đổi
     await emit.forEach(
-      _remoteDataSource.watchFoods(),
+      _watchFoodsUseCase(),
       onData: (foods) {
         print('DEBUG: Đã nhận ${foods.length} món ăn từ Firestore');
         return FoodLoaded(foods);

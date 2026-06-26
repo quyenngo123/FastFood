@@ -8,10 +8,12 @@ import 'package:fash_food/features/food/domain/entities/food_entity.dart';
 import 'package:fash_food/features/food/domain/entities/cart_item_entity.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_state.dart';
+import 'package:fash_food/features/food/data/datasources/food_data.dart';
 import 'package:go_router/go_router.dart';
 
 class FavoritePage extends StatefulWidget {
-  const FavoritePage({super.key});
+  final VoidCallback? onBack;
+  const FavoritePage({super.key, this.onBack});
 
   @override
   State<FavoritePage> createState() => _FavoritePageState();
@@ -35,7 +37,6 @@ class _FavoritePageState extends State<FavoritePage> {
         title: const Text('Món ăn yêu thích', 
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
-
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -43,15 +44,14 @@ class _FavoritePageState extends State<FavoritePage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
-            if (context.canPop()) {
+            if (widget.onBack != null) {
+              widget.onBack!();
+            } else if (context.canPop()) {
               context.pop();
             }
-            },
+          },
         ),
       ),
-             // Quay lại trang trước đó (ProfilePage)
-
-
       body: BlocBuilder<FavoriteBloc, FavoriteState>(
         builder: (context, state) {
           if (state is FavoriteLoading) {
@@ -76,34 +76,42 @@ class _FavoritePageState extends State<FavoritePage> {
               itemBuilder: (context, index) {
                 final fav = favorites[index];
                 
-                // Chuẩn hóa đường dẫn ảnh
-                String displayImage = fav.productImage;
+                // Tra cứu món ăn từ FoodData để lấy thông tin mới nhất (đặc biệt là hình ảnh Unsplash)
+                // Ưu tiên khớp ID, sau đó khớp theo Tên để đảm bảo không bị sót
+                final FoodEntity? mappedFood = FoodData.foods.cast<FoodEntity?>().firstWhere(
+                  (f) => f!.id == fav.productId || f.name.toLowerCase() == fav.productName.toLowerCase(),
+                  orElse: () => null,
+                );
+
+                final String rawImageUrl = mappedFood?.imageUrl ?? fav.productImage;
+                String displayImage = rawImageUrl;
                 if (!displayImage.startsWith('http') && !displayImage.startsWith('assets/')) {
-                  // Nếu chỉ có tên file, mặc định thử thư mục categories
                   displayImage = 'assets/images/categories/$displayImage';
                 }
 
-                final food = FoodEntity(
-                  id: fav.productId,
-                  name: fav.productName,
+                final foodToDisplay = FoodEntity(
+                  id: mappedFood?.id ?? fav.productId,
+                  name: mappedFood?.name ?? fav.productName,
                   imageUrl: displayImage,
-                  price: fav.productPrice,
-                  category: fav.categoryId,
-                  description: 'Món ăn từ danh sách yêu thích', 
-                  rating: 4.8,     
-                  reviewCount: 120,
+                  price: mappedFood?.price ?? fav.productPrice,
+                  category: mappedFood?.category ?? fav.categoryId,
+                  description: mappedFood?.description ?? 'Món ăn yêu thích',
+                  rating: mappedFood?.rating ?? 4.8,
+                  reviewCount: mappedFood?.reviewCount ?? 120,
+                  isPromo: mappedFood?.isPromo ?? false,
+                  originalPrice: mappedFood?.originalPrice,
                 );
 
                 return FoodCard(
-                  food: food,
+                  food: foodToDisplay,
                   onAddToCart: () {
                     final authState = context.read<AuthBloc>().state;
                     if (authState is AuthSuccess) {
                       final cartItem = CartItemEntity(
-                        productId: food.id,
-                        name: food.name,
-                        image: food.imageUrl,
-                        price: food.price,
+                        productId: foodToDisplay.id,
+                        name: foodToDisplay.name,
+                        image: foodToDisplay.imageUrl,
+                        price: foodToDisplay.price,
                         quantity: 1,
                       );
 
@@ -114,7 +122,7 @@ class _FavoritePageState extends State<FavoritePage> {
                       
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Đã thêm ${food.name} vào giỏ hàng'), 
+                          content: Text('Đã thêm ${foodToDisplay.name} vào giỏ hàng'), 
                           duration: const Duration(seconds: 1),
                           backgroundColor: AppColors.success,
                           behavior: SnackBarBehavior.floating,
@@ -149,7 +157,9 @@ class _FavoritePageState extends State<FavoritePage> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () {
-              // Có thể thêm logic quay về tab Home nếu cần
+              if (widget.onBack != null) {
+                widget.onBack!();
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

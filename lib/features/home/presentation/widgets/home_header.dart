@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:fash_food/core/theme/app_colors.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fash_food/features/auth/presentation/bloc/auth_state.dart';
+import 'package:fash_food/features/home/presentation/bloc/notification_bloc.dart';
 import 'package:fash_food/config/routes/app_routes.dart';
 
 class HomeHeader extends StatelessWidget {
   final String userName;
   final bool showSearchBar;
   final bool isSticky;
-  final VoidCallback? onSearchTap; // Thêm callback
+  final VoidCallback? onSearchTap;
 
   const HomeHeader({
     super.key,
@@ -119,35 +120,54 @@ class HomeNotificationIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const Icon(Icons.notifications_none_rounded,
-            color: Colors.white, size: 28),
-        Positioned(
-          right: 2,
-          top: 2,
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-                color: Color(0xFFF44336), shape: BoxShape.circle),
-            child: const Text('2',
-                style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+    return BlocBuilder<NotificationBloc, NotificationState>(
+      builder: (context, state) {
+        int unreadCount = 0;
+        if (state is NotificationLoaded) {
+          unreadCount = state.notifications.where((n) => !n.isRead).length;
+        }
+
+        return GestureDetector(
+          onTap: () => context.push(AppRoutes.notifications),
+          child: Stack(
+            children: [
+              const Icon(Icons.notifications_none_rounded,
+                  color: Colors.white, size: 28),
+              if (unreadCount > 0)
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                        color: Color(0xFFF44336), shape: BoxShape.circle),
+                    child: Text(
+                      unreadCount > 9 ? '9+' : '$unreadCount',
+                      style: const TextStyle(
+                        color: Colors.white, 
+                        fontSize: 8, 
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
 class HomeSearchBar extends StatelessWidget {
-  final VoidCallback? onTap; // Thêm callback
+  final VoidCallback? onTap;
 
   const HomeSearchBar({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap, // Kích hoạt sự kiện khi nhấn vào
+      onTap: onTap,
       child: Container(
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/datasources/address_remote_data_source.dart';
-import '../../data/models/address_model.dart';
+import '../../domain/usecases/get_addresses_usecase.dart';
+import '../../domain/usecases/save_address_usecase.dart';
+import '../../domain/usecases/delete_address_usecase.dart';
+import '../../domain/usecases/set_default_address_usecase.dart';
 import 'address_event.dart';
 import 'address_state.dart';
 
@@ -8,11 +10,20 @@ export 'address_event.dart';
 export 'address_state.dart';
 
 class AddressBloc extends Bloc<AddressEvent, AddressState> {
-  final AddressRemoteDataSource _remoteDataSource;
+  final GetAddressesUseCase _getAddressesUseCase;
+  final SaveAddressUseCase _saveAddressUseCase;
+  final DeleteAddressUseCase _deleteAddressUseCase;
+  final SetDefaultAddressUseCase _setDefaultAddressUseCase;
 
   AddressBloc({
-    required AddressRemoteDataSource remoteDataSource,
-  })  : _remoteDataSource = remoteDataSource,
+    required GetAddressesUseCase getAddressesUseCase,
+    required SaveAddressUseCase saveAddressUseCase,
+    required DeleteAddressUseCase deleteAddressUseCase,
+    required SetDefaultAddressUseCase setDefaultAddressUseCase,
+  })  : _getAddressesUseCase = getAddressesUseCase,
+        _saveAddressUseCase = saveAddressUseCase,
+        _deleteAddressUseCase = deleteAddressUseCase,
+        _setDefaultAddressUseCase = setDefaultAddressUseCase,
         super(AddressInitial()) {
     on<GetAddressesEvent>(_onGetAddresses);
     on<SaveAddressEvent>(_onSaveAddress);
@@ -23,7 +34,7 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
   Future<void> _onGetAddresses(GetAddressesEvent event, Emitter<AddressState> emit) async {
     emit(AddressLoading());
     try {
-      final addresses = await _remoteDataSource.getAddresses(event.userId);
+      final addresses = await _getAddressesUseCase(event.userId);
       emit(AddressLoaded(addresses));
     } catch (e) {
       emit(AddressError(e.toString()));
@@ -33,13 +44,8 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
   Future<void> _onSaveAddress(SaveAddressEvent event, Emitter<AddressState> emit) async {
     emit(AddressLoading());
     try {
-      // Đảm bảo AddressModel nhận vào có đủ userId từ Entity
-      final addressModel = AddressModel.fromEntity(event.address);
-      await _remoteDataSource.saveAddress(addressModel);
-      
+      await _saveAddressUseCase(event.address);
       emit(AddressActionSuccess());
-      
-      // Tự động load lại danh sách địa chỉ cho người dùng hiện tại
       add(GetAddressesEvent(event.address.userId));
     } catch (e) {
       emit(AddressError(e.toString()));
@@ -49,9 +55,8 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
   Future<void> _onDeleteAddress(DeleteAddressEvent event, Emitter<AddressState> emit) async {
     emit(AddressLoading());
     try {
-      await _remoteDataSource.deleteAddress(event.addressId);
+      await _deleteAddressUseCase(event.addressId);
       emit(AddressActionSuccess());
-      // Refresh lại danh sách
       add(GetAddressesEvent(event.userId));
     } catch (e) {
       emit(AddressError(e.toString()));
@@ -61,9 +66,8 @@ class AddressBloc extends Bloc<AddressEvent, AddressState> {
   Future<void> _onSetDefaultAddress(SetDefaultAddressEvent event, Emitter<AddressState> emit) async {
     emit(AddressLoading());
     try {
-      await _remoteDataSource.setDefaultAddress(event.userId, event.addressId);
+      await _setDefaultAddressUseCase(event.userId, event.addressId);
       emit(AddressActionSuccess());
-      // Refresh lại danh sách để UI cập nhật dấu tick "Mặc định"
       add(GetAddressesEvent(event.userId));
     } catch (e) {
       emit(AddressError(e.toString()));

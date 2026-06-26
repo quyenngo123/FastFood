@@ -9,6 +9,8 @@ class NotificationModel extends NotificationEntity {
     required super.createdAt,
     super.isRead = false,
     super.type,
+    super.image,
+    super.data,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
@@ -21,11 +23,13 @@ class NotificationModel extends NotificationEntity {
           : DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now(),
       isRead: json['isRead'] as bool? ?? false,
       type: json['type'] as String?,
+      image: json['image'] as String?,
+      data: json['data'] != null ? Map<String, dynamic>.from(json['data'] as Map) : null,
     );
   }
 
   factory NotificationModel.fromSnapshot(DocumentSnapshot snapshot) {
-    final data = snapshot.data() as Map<String, dynamic>;
+    final data = snapshot.data() as Map<String, dynamic>? ?? {};
     return NotificationModel.fromJson({
       ...data,
       'id': snapshot.id,
@@ -40,6 +44,8 @@ class NotificationModel extends NotificationEntity {
       'createdAt': Timestamp.fromDate(createdAt),
       'isRead': isRead,
       'type': type,
+      'image': image,
+      'data': data,
     };
   }
 
@@ -51,6 +57,8 @@ class NotificationModel extends NotificationEntity {
       createdAt: entity.createdAt,
       isRead: entity.isRead,
       type: entity.type,
+      image: entity.image,
+      data: entity.data,
     );
   }
 }
